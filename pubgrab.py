@@ -44,23 +44,23 @@ name_list = []
 
 #start to itterate throguh all the "forskningsresultat" list
 for i in data['forskningsresultat']:
-     #print out title and year
-     print(i['fellesdata']['tittel'], i['fellesdata']['ar'])
+    #print out title and year
+    print(i['fellesdata']['tittel'], i['fellesdata']['ar'])
 
-     #print out publication and issue nr.
-     #ATH this is not working as intended
-     print(i['fellesdata']['rapportdata']['publikasjonskanal']['serie']['navn'], i['fellesdata']['rapportdata']['publikasjonskanal']['serie']['issn'])
-     #This need to be passed to IF statements and captured based on article types
-     #print(i['kategoridata']['tidsskriftsartikkel']['publikasjonskanal']['serie']['navn'], i['fellesdata']['rapportdata']['publikasjonskanal']['serie']['issn'])
+    #print out publication and issue nr.
+    #ATH this is not working as intended
+    print(i['fellesdata']['rapportdata']['publikasjonskanal']['serie']['navn'], i['fellesdata']['rapportdata']['publikasjonskanal']['serie']['issn'])
+    #This need to be passed to IF statements and captured based on article types
+    #print(i['kategoridata']['tidsskriftsartikkel']['publikasjonskanal']['serie']['navn'], i['fellesdata']['rapportdata']['publikasjonskanal']['serie']['issn'])
 
-     #itterate through all the personal associated with the publications
-     for k in i['fellesdata']['person']:
-          #Convert first names to uppercase letters only
-          Short_firstname = k['fornavn']
-          Uppercase_firstname = ''.join(c for c in Short_firstname if c.isupper())
-          #Append all the list to the names
-          #print((k['etternavn'] + ' '+ Uppercase_firstname))
-          name_list.append( (k['etternavn'] + ' '+ Uppercase_firstname) )
+    #itterate through all the personal associated with the publications
+    for k in i['fellesdata']['person']:
+        #Convert first names to uppercase letters only
+        Short_firstname = k['fornavn']
+        Uppercase_firstname = ''.join(c for c in Short_firstname if c.isupper())
+        #Append all the list to the names
+        #print((k['etternavn'] + ' '+ Uppercase_firstname))
+        name_list.append( (k['etternavn'] + ' '+ Uppercase_firstname) )
 print(name_list)
 
 #next task test set up a good output.
