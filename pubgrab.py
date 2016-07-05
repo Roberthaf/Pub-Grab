@@ -1,16 +1,7 @@
-@@ -1,3 +1,11 @@
-+"""
-+Build publication list for a list of authors.
-+
-+Retrieve records from the CRISTIN database of Norwegian scientific publications,
-+using a mix of the old and new REST APIs.
-+Present results as HTML.
-+"""
-
 import requests
 import json
 
-#set up which user to search for will be passed to an ARGV in the future
+# Set up which user to search for will be passed to an ARGV in the future
 name_of_user="Jon+Olav+Vik"
 
 #new api, search for the user and find personal id
