@@ -1,3 +1,11 @@
+"""
+Build publication list for a list of authors.
+
+Retrieve records from the CRISTIN database of Norwegian scientific publications,
+using a mix of the old and new REST APIs.
+Present results as HTML.
+"""
+
 import requests
 import json
 
