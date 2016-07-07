@@ -45,6 +45,7 @@ def cristin_person_id(author):
             return person[0]["cristin_person_id"]
         else:
             return None
+
 def pubs_by(author):
     """
     Get publications by author.
@@ -64,9 +65,6 @@ def pubs_by(author):
     print(url)
     pubs = requests.get(url).json()
     return pubs
-
-# Set the name of the person to grab references list for
-#user = str(cristin_person_id(name_of_user))
 
 # Initiate the url using pubs_by
 data = pubs_by(name_of_user)
@@ -154,7 +152,8 @@ html_str_end = """
 </HTML>
 """
 
-with open('mypage.html', 'w+',encoding="utf-8") as myFile:
+filename = name_of_user+'.html'
+with open(filename, 'w+',encoding="utf-8") as myFile:
     myFile.write(html_str_start)
     for i in html_codes_all:
         myFile.write('\t\t'+i+'\n')
