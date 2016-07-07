@@ -13,8 +13,6 @@ Info on transition from old to new API: http://www.cristin.no/om/aktuelt/aktuell
 """
 
 import requests
-import codecs
-import sys
 from urllib.parse import urlencode
 
 # set up which user to search for will be passed to an ARGV in the future
