@@ -66,7 +66,7 @@ def pubs_by(author):
     return pubs
 
 # Set the name of the person to grab references list for
-user = str(cristin_person_id(name_of_user))
+#user = str(cristin_person_id(name_of_user))
 
 # Initiate the url using pubs_by
 data = pubs_by(name_of_user)
