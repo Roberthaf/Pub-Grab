@@ -14,15 +14,16 @@ Info on transition from old to new API: http://www.cristin.no/om/aktuelt/aktuell
 
 import requests
 import codecs
+import sys
 from urllib.parse import urlencode
 
 # set up which user to search for will be passed to an ARGV in the future
 # To be added later start year and end year
 # start_year = 2015 end_year = 2015
-#name_of_user = "Jon Olav Vik"
+name_of_user = "Jon Olav Vik"
 #name_of_user = "Dag Inge Våge"
 #name_of_user = "Sigbjørn Lien"
-name_of_user = "Arne Bjørke Gjuvsland"
+#name_of_user = "Arne Bjørke Gjuvsland"
 
 def cristin_person_id(author):
     """
@@ -66,23 +67,21 @@ def pubs_by(author):
     pubs = requests.get(url).json()
     return pubs
 
-
-# Start printing out to file
+# Set the name of the person to grab references list for
 user = str(cristin_person_id(name_of_user))
-
-# Create a textfile named after the user specific ID
-text_file = user+".txt"
-myfile = codecs.open(text_file, 'w+', encoding="UTF-8")
 
 # Initiate the url using pubs_by
 data = pubs_by(name_of_user)
+
+# Create a list containing all information for printing html code
+html_codes_all = []
 
 # Sort data according to year of publication, newest first
 data_sort = sorted((data['forskningsresultat']), key=lambda k: k['fellesdata']['ar'],reverse=True)
 # Start to itterate throguh all the "forskningsresultat" list
 for i in data_sort:
     # Create a string for name for each itteration
-    name_list = ''
+    authers = ''
     # Iterate through all persons in the project and create a name list
     # Some instances are lists when multiple authers
     if (type(i['fellesdata']['person']) == list ):
@@ -91,59 +90,74 @@ for i in data_sort:
             Short_firstname = k['fornavn']
             Uppercase_firstname = ''.join(c for c in Short_firstname if c.isupper())
             # Append all the names to a string
-            name_list += ((k['etternavn'] + ' ' + Uppercase_firstname) + ', ')
+            authers += ((k['etternavn'] + ' ' + Uppercase_firstname) + ', ')
         # Remove a comma and a white space at the end of strings
-        name_list = name_list[:-2]
+        authers = authers[:-2]
 
-    # Some instances are dicts when it has a single auther
+    # For instances when its a single auther
     elif (type(i['fellesdata']['person']) == dict ):
         Short_firstname = i['fellesdata']['person']['fornavn']
         Uppercase_firstname = ''.join(c for c in Short_firstname if c.isupper())
         # Append name to a string
-        name_list = ((i['fellesdata']['person']['etternavn'] + ' ' + Uppercase_firstname))
-
-    # Iterate through all keys in the katergories
+        authers = ((i['fellesdata']['person']['etternavn'] + ' ' + Uppercase_firstname))
+        
+    # Iterate through all keys in the katergories.
     for key, value in (i['kategoridata']).items():
-
         # Start prasing data based on known keys. This will be expanded later
         if key == 'tidsskriftsartikkel':
-            myfile.write(name_list+'\n')
-            temp_tittle = i['fellesdata']['tittel']
-            temp_year = i['fellesdata']['ar']
-            temp_ty = temp_tittle + " " +'('+temp_year+') ';
-            myfile.write(temp_ty)
-            temp_article = i['kategoridata'][key]['tidsskrift']['navn']
+            tittel = i['fellesdata']['tittel']
+            year = i['fellesdata']['ar']
+            journal = '<em>'+i['kategoridata']['tidsskriftsartikkel']['tidsskrift']['navn']+'</em>'
+
             try:
-               temp_issue = i['kategoridata'][key]['tidsskrift']['issn']
-               break
+                articlenr = i['kategoridata']['tidsskriftsartikkel']['artikkelnr']
             except KeyError:
-                None
+                articlenr = ''
 
-            temp_ai = temp_article + " " + temp_issue
-            myfile.write(" "+ temp_ai +"\n")
+            try:
+                volum = '<strong>(' + i['kategoridata']['tidsskriftsartikkel']['volum'] + ')</strong>'
+            except KeyError:
+                volum = ''
 
-        elif key == ( 'foredragPoster' ):
-            myfile.write(name_list+'\n')
-            temp_tittel = i['fellesdata']['tittel']
-            temp_year = i['fellesdata']['ar']
-            temp_ty = temp_tittle + " " + '(' + temp_year + ') ';
-            myfile.write(temp_ty)
-            #myfile.write('Poster or workshop\n')
+            try:
+                 DOI = 'http://dx.doi.org/' + i['kategoridata']['tidsskriftsartikkel']['doi']
+            except KeyError:
+                 DOI = ''
 
-        elif key == 'bokRapportDel':
-            myfile.write(name_list+'\n')
-            temp_tittel = i['fellesdata']['tittel']
-            temp_year = i['fellesdata']['ar']
-            temp_ty = temp_tittle + " " + '(' + temp_year + ') ';
-            myfile.write(temp_ty)
-          #  myfile.write('Book report\n')
-        elif key == 'bokRapportDel':
-            myfile.write(name_list+'\n')
-            temp_tittel = i['fellesdata']['tittel']
-            temp_year = i['fellesdata']['ar']
-            temp_ty = temp_tittle + " " + '(' + temp_year + ') ';
-            myfile.write(temp_ty)
-            #myfile.write('Book\n ')
-            # Next task test set up a good output.
-            # Make sure it works for multiple entries
-            # Put out as a HTML file.
+            HTML_string = ('<p> ' + authers + ' (' + year + '). ' + tittel + ' ' + journal + ' ' + volum + ' ' + articlenr + ' ' + DOI + '</p>')
+            html_codes_all.append(HTML_string)
+
+        # Corrently only working for Articles, codes below can be used to add more items.
+        # elif key == ( 'foredragPoster' ):
+        #     tittel = i['fellesdata']['tittel']
+        #     year = i['fellesdata']['ar']
+        #     #journal = '<em>'+i['kategoridata'][key]['navn']+'</em>' Wrokshop
+        # elif key == 'bokRapport':
+        #     tittel = '<em>'+i['fellesdata']['tittel']+'</em>'
+        #     year = '<strong>'+i['fellesdata']['ar']+'</strong>'
+        #
+        # elif key == 'bokRapportDel':
+        #     tittel = '<em>'+i['fellesdata']['tittel']+'</em>'
+        #     year = '<strong>'+i['fellesdata']['ar']+'</strong>'
+
+html_str_start = """
+<!DOCTYPE html>
+<HTML>
+    <head>
+        <meta charset="utf-8">
+    </head>
+
+    <body>
+        <h1>References</h1>
+"""
+
+html_str_end = """
+    </body>
+</HTML>
+"""
+
+with open('mypage.html', 'w+',encoding="utf-8") as myFile:
+    myFile.write(html_str_start)
+    for i in html_codes_all:
+        myFile.write('\t\t'+i+'\n')
+    myFile.write(html_str_end)
