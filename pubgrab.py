@@ -55,90 +55,89 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
     Arne Gjuvsland published two journal articles in 2010.
 
     >>> p = pubs_by("Arne Gjuvsland", 2010, 2010)
-    >>> len(p["forskningsresultat"])
+    >>> len(p)
     2
 
     Each item has "fellesdata" (shared among all publication types) and "kategoridata" (particular to journal articles).
     Both are of interest.
 
-    >>> sorted(p["forskningsresultat"][0].keys())
+    >>> sorted(p[0].keys())
     ['fellesdata', 'kategoridata']
     >>> pprint(p)
-    {...
-     'forskningsresultat': [{'fellesdata': {...
-                                            'ar': '2010',
-                                            ...
-                                            'id': '769189',
-                                            ...
-                                            'person': [{'etternavn': 'Gjuvsland', ...},
-                                                       {'etternavn': 'Plahte', ...},
-                                                       {'etternavn': 'Ådnøy', ...},
-                                                       {'etternavn': 'Omholt', ...}],
-                                            ...
-                                            'tittel': 'Allele Interaction - Single '
-                                                      'Locus Genetics Meets '
-                                                      'Regulatory Biology'},
-                             'kategoridata': {'tidsskriftsartikkel': {'artikkelnr': 'e9379',
-                                                                      'doi': '10.1371/journal.pone.0009379',
-                                                                      'hefte': '2',
-                                                                      'tidsskrift': {'@oaDoaj': 'true',
-                                                                                     ...
-                                                                                     'navn': 'PLoS '
-                                                                                             'ONE',
-                                                                                     ...},
-                                                                      'volum': '5'}}},
-                            {'fellesdata': {...
-                                            'ar': '2010',
-                                            ...
-                                            'id': '771116',
-                                            ...
-                                            'person': [{'etternavn': 'Tøndel',
-                                                        'fornavn': 'Kristin', ...},
-                                                       {'etternavn': 'Gjuvsland', ...},
-                                                       ...],
-                                            ...
-                                            'tittel': 'Screening design for '
-                                                      'computer experiments: '
-                                            ...},
-                             'kategoridata': {'tidsskriftsartikkel': {'doi': '10.1002/cem.1363',
-                                                                      'hefte': '11-12',
-                                                                      'sideangivelse': {'sideFra': '738',
-                                                                                        'sideTil': '747'},
-                                                                      'tidsskrift': {...
-                                                                                     'navn': 'Journal '
-                                                                                             'of '
-                                                                                             'Chemometrics',
-                                                                                     ...},
-                                                                      'volum': '24'}}}],
-    ...}
+    [{'fellesdata': {...
+                     'ar': '2010',
+                     ...
+                     'id': '769189',
+                     ...
+                     'person': [{'etternavn': 'Gjuvsland',
+                                 'fornavn': 'Arne Bjørke', ...},
+                                {'etternavn': 'Plahte', ...},
+                                {'etternavn': 'Ådnøy', ...},
+                                {'etternavn': 'Omholt', ...}],
+                     ...
+                     'tittel': 'Allele Interaction - Single Locus Genetics Meets '
+                               'Regulatory Biology'},
+      'kategoridata': {'tidsskriftsartikkel': {'artikkelnr': 'e9379',
+                                               'doi': '10.1371/journal.pone.0009379',
+                                               'hefte': '2',
+                                               'tidsskrift': {'@oaDoaj': 'true',
+                                                              'id': '435449',
+                                                              'issn': '1932-6203',
+                                                              'kvalitetsniva': {'kode': '1', ...},
+                                                              'navn': 'PLoS ONE',
+                                                              ...},
+                                               'volum': '5'}}},
+     {'fellesdata': {...
+                     'ar': '2010',
+                     ...
+                     'id': '771116',
+                     ...
+                     'person': [{'etternavn': 'Tøndel', ...},
+                                {'etternavn': 'Gjuvsland', ...},
+                                ...],
+                     ...
+                     'tittel': 'Screening design for computer experiments: '
+                               'metamodelling of a deterministic mathematical '
+                               'model of the mammalian circadian clock'},
+      'kategoridata': {'tidsskriftsartikkel': {'doi': '10.1002/cem.1363',
+                                               'hefte': '11-12',
+                                               'sideangivelse': {'sideFra': '738',
+                                                                 'sideTil': '747'},
+                                               'tidsskrift': {...
+                                                              'navn': 'Journal of '
+                                                                      'Chemometrics',
+                                                              ...},
+                                               'volum': '24'}}}]
 
-    Funding sources are in pubs["forskningsresultat"][i]["fellesdata"]["eksternprosjekt"].
+    Funding sources are in pubs[i]["fellesdata"]["eksternprosjekt"].
 
     >>> pprint(pubs_by("Jon Olav Vik", 2014, 2014))
-    {...
-     'forskningsresultat': [{'fellesdata': {'ar': '2014',
-                                            ...
-                                            'eksternprosjekt': [{'finansieringskilde': {'kode': 'SKGJ', ...},
-                                                                 'id': 'SKGJ-MED-005'},
-                                                                {'finansieringskilde': {'kode': 'NFR', ...},
-                                                                 'id': '178901'},
-                                                                {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
-                                                                 'id': 'NN4653K'}],...
+    [{'fellesdata': {'ar': '2014',
+                     ...
+                     'eksternprosjekt': [{'finansieringskilde': {'kode': 'SKGJ', ...},
+                                          'id': 'SKGJ-MED-005'},
+                                         {'finansieringskilde': {'kode': 'NFR', ...},
+                                          'id': '178901'},
+                                         {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
+                                          'id': 'NN4653K'}],...
     """
     cpid = cristin_person_id(author)
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
     url = base + urlencode(dict(lopenr=cpid, fra=fra, til=til, hovedkategori=hovedkategori, format="json"))
     logging.debug("Getting URL: " + url)
     pubs = requests.get(url).json()
-    return pubs
+    # This has dict_keys(['@xsi:noNamespaceSchemaLocation', 'generert', '@xmlns:xsi', 'forskningsresultat']),
+    # but we only need this one.
+    return pubs["forskningsresultat"]
 
 def citation(pub):
     """
     Citation of a single publication.
 
-    Example with a single author.
-
-    >>> pubs = pubs_by("Stig Omholt", 2013, 2013)
+    >>> pubs = pubs_by("Arne Gjuvsland", 2010, 2010)
+    >>> pubs.keys()
+    >>> for pub in pubs:
+    ...     print(citation(pub))
     """
 
 if __name__ == "__main__":
