@@ -40,7 +40,7 @@ def cristin_person_id(author):
             return None
 
 
-def pubs_by(author):
+def pubs_by(author, fromyear="", toyear=""):
     """
     Get publications by author.
 
@@ -55,7 +55,7 @@ def pubs_by(author):
     """
     cpid = cristin_person_id(author)
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
-    url = base + urlencode(dict(lopenr=cpid, fra=2002, til=2016, format="json"))
+    url = base + urlencode(dict(lopenr=cpid, fra=fromyear, til=toyear, format="json"))
     print(url)
     pubs = requests.get(url).json()
     return pubs
