@@ -74,32 +74,32 @@ html_codes_all = []
 
 # Sort data according to year of publication, newest first
 data_sort = sorted((data['forskningsresultat']), key=lambda k: k['fellesdata']['ar'],reverse=True)
-# Start to itterate throguh all the "forskningsresultat" list
+# Start to iterate through all the "forskningsresultat" list
 for i in data_sort:
-    # Create a string for name for each itteration
-    authers = ''
+    # Create a string for name for each iteration
+    authors = ''
     # Iterate through all persons in the project and create a name list
-    # Some instances are lists when multiple authers
+    # Some instances are lists when multiple authors
     if (type(i['fellesdata']['person']) == list ):
         for k in i['fellesdata']['person']:
             # Convert first names to uppercase letters only
             Short_firstname = k['fornavn']
             Uppercase_firstname = ''.join(c for c in Short_firstname if c.isupper())
             # Append all the names to a string
-            authers += ((k['etternavn'] + ' ' + Uppercase_firstname) + ', ')
+            authors += ((k['etternavn'] + ' ' + Uppercase_firstname) + ', ')
         # Remove a comma and a white space at the end of strings
-        authers = authers[:-2]
+        authors = authors[:-2]
 
-    # For instances when its a single auther
+    # For instances when there is a single author
     elif (type(i['fellesdata']['person']) == dict ):
         Short_firstname = i['fellesdata']['person']['fornavn']
         Uppercase_firstname = ''.join(c for c in Short_firstname if c.isupper())
         # Append name to a string
-        authers = ((i['fellesdata']['person']['etternavn'] + ' ' + Uppercase_firstname))
+        authors = ((i['fellesdata']['person']['etternavn'] + ' ' + Uppercase_firstname))
         
-    # Iterate through all keys in the katergories.
+    # Iterate through all keys in the categories.
     for key, value in (i['kategoridata']).items():
-        # Start prasing data based on known keys. This will be expanded later
+        # Start processing data based on known keys. This will be expanded later
         if key == 'tidsskriftsartikkel':
             tittel = i['fellesdata']['tittel']
             year = i['fellesdata']['ar']
@@ -120,10 +120,10 @@ for i in data_sort:
             except KeyError:
                  DOI = ''
 
-            HTML_string = ('<p> ' + authers + ' (' + year + '). ' + tittel + ' ' + journal + ' ' + volum + ' ' + articlenr + ' ' + DOI + '</p>')
+            HTML_string = ('<p> ' + authors + ' (' + year + '). ' + tittel + ' ' + journal + ' ' + volum + ' ' + articlenr + ' ' + DOI + '</p>')
             html_codes_all.append(HTML_string)
 
-        # Corrently only working for Articles, codes below can be used to add more items.
+        # Currently only working for Articles, codes below can be used to add more items.
         # elif key == ( 'foredragPoster' ):
         #     tittel = i['fellesdata']['tittel']
         #     year = i['fellesdata']['ar']
