@@ -19,13 +19,15 @@ from urllib.parse import urlencode
 # To be added later start year and end year
 # start_year = 2015 end_year = 2015
 name_of_user = "Jon Olav Vik"
-#name_of_user = "Dag Inge Våge"
-#name_of_user = "Sigbjørn Lien"
-#name_of_user = "Arne Bjørke Gjuvsland"
+# name_of_user = "Dag Inge Våge"
+# name_of_user = "Sigbjørn Lien"
+# name_of_user = "Arne Bjørke Gjuvsland"
+
 
 def cristin_person_id(author):
     """
     Get CRISTIN person ID of author.
+
     >>> cristin_person_id("Jon Olav Vik")
     22311
     >>> cristin_person_id("22311")
@@ -45,6 +47,7 @@ def cristin_person_id(author):
             return person[0]["cristin_person_id"]
         else:
             return None
+
 
 def pubs_by(author):
     """
@@ -66,6 +69,7 @@ def pubs_by(author):
     pubs = requests.get(url).json()
     return pubs
 
+
 # Initiate the url using pubs_by
 data = pubs_by(name_of_user)
 
@@ -73,14 +77,15 @@ data = pubs_by(name_of_user)
 html_codes_all = []
 
 # Sort data according to year of publication, newest first
-data_sort = sorted((data['forskningsresultat']), key=lambda k: k['fellesdata']['ar'],reverse=True)
+# noinspection PyShadowingNames
+data_sort = sorted((data['forskningsresultat']), key=lambda k: k['fellesdata']['ar'], reverse=True)
 # Start to iterate through all the "forskningsresultat" list
 for i in data_sort:
     # Create a string for name for each iteration
     authors = ''
     # Iterate through all persons in the project and create a name list
     # Some instances are lists when multiple authors
-    if (type(i['fellesdata']['person']) == list ):
+    if type(i['fellesdata']['person']) == list:
         for k in i['fellesdata']['person']:
             # Convert first names to uppercase letters only
             Short_firstname = k['fornavn']
@@ -91,19 +96,19 @@ for i in data_sort:
         authors = authors[:-2]
 
     # For instances when there is a single author
-    elif (type(i['fellesdata']['person']) == dict ):
+    elif type(i['fellesdata']['person']) == dict:
         Short_firstname = i['fellesdata']['person']['fornavn']
         Uppercase_firstname = ''.join(c for c in Short_firstname if c.isupper())
         # Append name to a string
-        authors = ((i['fellesdata']['person']['etternavn'] + ' ' + Uppercase_firstname))
-        
+        authors = i['fellesdata']['person']['etternavn'] + ' ' + Uppercase_firstname
+
     # Iterate through all keys in the categories.
     for key, value in (i['kategoridata']).items():
         # Start processing data based on known keys. This will be expanded later
         if key == 'tidsskriftsartikkel':
             tittel = i['fellesdata']['tittel']
             year = i['fellesdata']['ar']
-            journal = '<em>'+i['kategoridata']['tidsskriftsartikkel']['tidsskrift']['navn']+'</em>'
+            journal = '<em>' + i['kategoridata']['tidsskriftsartikkel']['tidsskrift']['navn'] + '</em>'
 
             try:
                 articlenr = i['kategoridata']['tidsskriftsartikkel']['artikkelnr']
@@ -116,25 +121,26 @@ for i in data_sort:
                 volum = ''
 
             try:
-                 DOI = 'http://dx.doi.org/' + i['kategoridata']['tidsskriftsartikkel']['doi']
+                DOI = 'http://dx.doi.org/' + i['kategoridata']['tidsskriftsartikkel']['doi']
             except KeyError:
-                 DOI = ''
+                DOI = ''
 
-            HTML_string = ('<p> ' + authors + ' (' + year + '). ' + tittel + ' ' + journal + ' ' + volum + ' ' + articlenr + ' ' + DOI + '</p>')
+            HTML_string = ('<p> ' + authors + ' (' + year + '). ' + tittel + ' ' + journal + ' ' + volum +
+                           ' ' + articlenr + ' ' + DOI + '</p>')
             html_codes_all.append(HTML_string)
 
-        # Currently only working for Articles, codes below can be used to add more items.
-        # elif key == ( 'foredragPoster' ):
-        #     tittel = i['fellesdata']['tittel']
-        #     year = i['fellesdata']['ar']
-        #     #journal = '<em>'+i['kategoridata'][key]['navn']+'</em>' Wrokshop
-        # elif key == 'bokRapport':
-        #     tittel = '<em>'+i['fellesdata']['tittel']+'</em>'
-        #     year = '<strong>'+i['fellesdata']['ar']+'</strong>'
-        #
-        # elif key == 'bokRapportDel':
-        #     tittel = '<em>'+i['fellesdata']['tittel']+'</em>'
-        #     year = '<strong>'+i['fellesdata']['ar']+'</strong>'
+            # Currently only working for Articles, codes below can be used to add more items.
+            # elif key == ( 'foredragPoster' ):
+            #     tittel = i['fellesdata']['tittel']
+            #     year = i['fellesdata']['ar']
+            #     #journal = '<em>'+i['kategoridata'][key]['navn']+'</em>' Wrokshop
+            # elif key == 'bokRapport':
+            #     tittel = '<em>'+i['fellesdata']['tittel']+'</em>'
+            #     year = '<strong>'+i['fellesdata']['ar']+'</strong>'
+            #
+            # elif key == 'bokRapportDel':
+            #     tittel = '<em>'+i['fellesdata']['tittel']+'</em>'
+            #     year = '<strong>'+i['fellesdata']['ar']+'</strong>'
 
 html_str_start = """
 <!DOCTYPE html>
@@ -152,9 +158,9 @@ html_str_end = """
 </HTML>
 """
 
-filename = name_of_user+'.html'
-with open(filename, 'w+',encoding="utf-8") as myFile:
+filename = name_of_user + '.html'
+with open(filename, 'w+', encoding="utf-8") as myFile:
     myFile.write(html_str_start)
     for i in html_codes_all:
-        myFile.write('\t\t'+i+'\n')
+        myFile.write('\t\t' + i + '\n')
     myFile.write(html_str_end)
