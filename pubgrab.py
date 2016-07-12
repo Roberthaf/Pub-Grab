@@ -57,78 +57,95 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
     >>> p = pubs_by("Arne Gjuvsland", 2010, 2010)
     >>> len(p)
     2
-
-    Each item has "fellesdata" (shared among all publication types) and "kategoridata" (particular to journal articles).
-    Both are of interest.
-
-    >>> sorted(p[0].keys())
-    ['fellesdata', 'kategoridata']
     >>> pprint(p)
-    [{'fellesdata': {...
-                     'ar': '2010',
-                     ...
-                     'id': '769189',
-                     ...
-                     'person': [{'etternavn': 'Gjuvsland',
-                                 'fornavn': 'Arne Bjørke', ...},
-                                {'etternavn': 'Plahte', ...},
-                                {'etternavn': 'Ådnøy', ...},
-                                {'etternavn': 'Omholt', ...}],
-                     ...
-                     'tittel': 'Allele Interaction - Single Locus Genetics Meets '
-                               'Regulatory Biology'},
-      'kategoridata': {'tidsskriftsartikkel': {'artikkelnr': 'e9379',
-                                               'doi': '10.1371/journal.pone.0009379',
-                                               'hefte': '2',
-                                               'tidsskrift': {'@oaDoaj': 'true',
-                                                              'id': '435449',
-                                                              'issn': '1932-6203',
-                                                              'kvalitetsniva': {'kode': '1', ...},
-                                                              'navn': 'PLoS ONE',
-                                                              ...},
-                                               'volum': '5'}}},
-     {'fellesdata': {...
-                     'ar': '2010',
-                     ...
-                     'id': '771116',
-                     ...
-                     'person': [{'etternavn': 'Tøndel', ...},
-                                {'etternavn': 'Gjuvsland', ...},
-                                ...],
-                     ...
-                     'tittel': 'Screening design for computer experiments: '
-                               'metamodelling of a deterministic mathematical '
-                               'model of the mammalian circadian clock'},
-      'kategoridata': {'tidsskriftsartikkel': {'doi': '10.1002/cem.1363',
-                                               'hefte': '11-12',
-                                               'sideangivelse': {'sideFra': '738',
-                                                                 'sideTil': '747'},
-                                               'tidsskrift': {...
-                                                              'navn': 'Journal of '
-                                                                      'Chemometrics',
-                                                              ...},
-                                               'volum': '24'}}}]
+    [{...
+      'ar': '2010',
+      ...
+      'id': '769189',
+      ...
+      'kategori': {'hovedkategori': {'kode': 'TIDSSKRIFTPUBL',
+                                     'navn': 'Tidsskriftspublikasjon',
+                                     'navnEngelsk': 'Journal publication'},
+                   'underkategori': {'kode': 'ARTIKKEL',
+                                     'navn': 'Vitenskapelig artikkel',
+                                     'navnEngelsk': 'Academic article'}},
+      ...
+      'person': [{'etternavn': 'Gjuvsland',
+                  'fornavn': 'Arne Bjørke',
+                  'harFodselsnummer': 'true',
+                  'id': '7059',
+                  'rekkefolgenr': '1',
+                  'tilhorighet': {'sted': {'avdnr': '1', ...}}},
+                 {'etternavn': 'Plahte', ...},
+                 {'etternavn': 'Ådnøy', ...},
+                 {'etternavn': 'Omholt', ...}],
+      ...
+      'sammendrag': [{'sprak': {'kode': 'EN',
+                                'navn': 'Engelsk',
+                                'navnEngelsk': 'English'},
+                      'tekst': 'Conclusion/Significance: The concept of allele '
+                               'interaction refines single locus genetics ' ...},
+                     {'sprak': {'kode': 'EN',
+                                'navn': 'Engelsk',
+                                'navnEngelsk': 'English'},
+                      'tekst': 'Allele Interaction - Single Locus Genetics Meets '
+                               'Regulatory Biology'}],
+      'sprak': {'kode': 'EN', 'navn': 'Engelsk', 'navnEngelsk': 'English'},
+      'tidsskriftsartikkel': {'artikkelnr': 'e9379',
+                              'doi': '10.1371/journal.pone.0009379',
+                              'hefte': '2',
+                              'tidsskrift': {'@oaDoaj': 'true',
+                                             'id': '435449',
+                                             'issn': '1932-6203',
+                                             'kvalitetsniva': {'kode': '1', ...},
+                                             'navn': 'PLoS ONE',
+                                             ...},
+                              'volum': '5'},
+      'tittel': 'Allele Interaction - Single Locus Genetics Meets Regulatory '
+                'Biology'},
+     {...
+      'ar': '2010',
+      ...
+      'id': '771116',
+      ...
+      'person': [{'etternavn': 'Tøndel', ...},
+                 {'etternavn': 'Gjuvsland', ...},
+                 ...],
+      ...
+      'tidsskriftsartikkel': {'doi': '10.1002/cem.1363',
+                              'hefte': '11-12',
+                              'sideangivelse': {'sideFra': '738', 'sideTil': '747'},
+                              'tidsskrift': {'id': '5117',
+                                             'issn': '0886-9383',
+                                             'kvalitetsniva': {'kode': '1', ...},
+                                             'navn': 'Journal of Chemometrics',
+                                             ...},
+                              'volum': '24'},
+      'tittel': 'Screening design for computer experiments: metamodelling of a '
+                'deterministic mathematical model of the mammalian circadian '
+                'clock'}]
 
     Funding sources are in pubs[i]["fellesdata"]["eksternprosjekt"].
 
     >>> pprint(pubs_by("Jon Olav Vik", 2014, 2014))
-    [{'fellesdata': {'ar': '2014',
-                     ...
-                     'eksternprosjekt': [{'finansieringskilde': {'kode': 'SKGJ', ...},
-                                          'id': 'SKGJ-MED-005'},
-                                         {'finansieringskilde': {'kode': 'NFR', ...},
-                                          'id': '178901'},
-                                         {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
-                                          'id': 'NN4653K'}],...
+    [{'ar': '2014',
+      ...
+      'eksternprosjekt': [{'finansieringskilde': {'kode': 'SKGJ', ...},
+                           'id': 'SKGJ-MED-005'},
+                          {'finansieringskilde': {'kode': 'NFR', ...},
+                           'id': '178901'},
+                          {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
+                           'id': 'NN4653K'}],...
     """
     cpid = cristin_person_id(author)
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
     url = base + urlencode(dict(lopenr=cpid, fra=fra, til=til, hovedkategori=hovedkategori, format="json"))
     logging.debug("Getting URL: " + url)
     pubs = requests.get(url).json()
-    # This has dict_keys(['@xsi:noNamespaceSchemaLocation', 'generert', '@xmlns:xsi', 'forskningsresultat']),
-    # but we only need this one.
-    return pubs["forskningsresultat"]
+    # pubs now has dict_keys(['@xsi:noNamespaceSchemaLocation', 'generert', '@xmlns:xsi', 'forskningsresultat'])
+    # Extract forskningsresultat then merge fellesdata and kategoridata so we return a list of one dict per publication
+    return [{**d["fellesdata"], **d["kategoridata"]} for d in pubs["forskningsresultat"]]
+
 
 def citation(pub):
     """
