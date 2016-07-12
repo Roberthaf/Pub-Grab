@@ -48,45 +48,120 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
     For now we return the full record, whose complex structure is documented at
     http://www.cristin.no/techdoc/xsd/resultater/1.0/
 
-    >>> from pprint import pprint
-    >>> pprint(pubs_by("Jon Olav Vik", 2009, 2009))
+    Example search that returns a single publication.
+
+    >>> from pprint import pprint  # Deterministic printing of dict (recursively sorts items)
+    >>> p = pubs_by("Jon Olav Vik", 2014, 2014)
+    >>> len(p["forskningsresultat"])
+    1
+    >>> len(pubs_by("Jon Olav Vik", fra=1900, til=2015)["forskningsresultat"])
+    29
+    >>> sorted(p["forskningsresultat"][0].keys())
+    ['fellesdata', 'kategoridata']
+    >>> pprint(p)
     {...
-     'forskningsresultat': [{'fellesdata': {'ar': '2009',
+     'forskningsresultat': [{'fellesdata': {'ar': '2014',
                                             ...
-                                            'id': '355297',
+                                            'eksternprosjekt': [{'finansieringskilde': {'kode': 'SKGJ', ...},
+                                                                 'id': 'SKGJ-MED-005'},
+                                                                {'finansieringskilde': {'kode': 'NFR', ...},
+                                                                 'id': '178901'},
+                                                                {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
+                                                                 'id': 'NN4653K'}],
                                             ...
-                                            'person': [{'etternavn': 'Godvik',
-                                                        'fornavn': 'Inger Maren '
-                                                                   'Rivrud',
+                                            'id': '1161735',
+                                            ...
+                                            'person': [{'etternavn': 'Nordbø',
+                                                        'fornavn': 'Øyvind',
                                                         ...
-                                                        'id': '5361',
+                                                        'id': '317719',
                                                         'rekkefolgenr': '1',
-                                                        'tilhorighet': [{'sted': {'avdnr': '15', ...]},
-                                                       {'etternavn': 'Loe', ...},
-                                                       {'etternavn': 'Vik', ...},
-                                                       {'etternavn': 'Veiberg', ...},
-                                                       {'etternavn': 'Langvatn', ...},
-                                                       {'etternavn': 'Mysterud', ...}],
+                                                        'tilhorighet': {'sted': {'avdnr': '1', ...]},
+                                                       ...
+                                                       {'etternavn': 'Vik', ...}],
                                             ...
-                                            'tittel': 'Temporal scales, '
-                                                      'trade-offs, and functional '
-                                                      'responses in red deer '
-                                                      'habitat selection'},
-                             'kategoridata': {'tidsskriftsartikkel': {'doi': '10.1890/08-0576.1',
-                                                                      'hefte': '3',
-                                                                      'sideangivelse': {'sideFra': '699',
-                                                                                        'sideTil': '710'},
-                                                                      'tidsskrift': {'id': '185',
-                                                                                     'issn': '0012-9658',
-                                                                                     'kvalitetsniva': {'kode': '2',
-                                                                                                       'navn': 'Kvalitetsnivå '
-                                                                                                               '2',
-                                                                                                       'navnEngelsk': 'Quality '
-                                                                                                                      'level '
-                                                                                                                      '2'},
-                                                                                     'navn': 'Ecology', ...},
-                                                                      'volum': '90'}}}],
-     ...}
+                                            'sammendrag': {'sprak': {...},
+                                                           'tekst': 'The mouse is '
+                                                                    'an important '
+                                                                    ...
+                                                                    'application.'},
+                                            ...
+                                            'tittel': 'A computational pipeline '
+                                                      'for quantification of mouse '
+                                                      'myocardial stiffness '
+                                                      'parameters'},
+                             'kategoridata': {'tidsskriftsartikkel': {'arstallOnline': '2014',
+                                                                      'arstallTrykket': '2014',
+                                                                      'doi': '10.1016/j.compbiomed.2014.07.013',
+                                                                      'sideangivelse': {'sideFra': '65',
+                                                                                        'sideTil': '75'},
+                                                                      'tidsskrift': {'id': '18057',
+                                                                                     'issn': '0010-4825',
+                                                                                     'kvalitetsniva': {'kode': '1',
+                                                                                                       ...},
+                                                                                     'navn': 'Computers '
+                                                                                             'in '
+                                                                                             'Biology '
+                                                                                             'and '
+                                                                                             'Medicine',
+                                                                                     ...},
+                                                                      'volum': '53'}}}],
+    ...}
+
+    Example search with two publications.
+
+    >>> p = pubs_by("Arne Gjuvsland", 2010, 2010)
+    >>> len(p["forskningsresultat"])
+    2
+    >>> sorted(p["forskningsresultat"][0].keys())
+    ['fellesdata', 'kategoridata']
+    >>> pprint(p)
+    {...
+     'forskningsresultat': [{'fellesdata': {...
+                                            'ar': '2010',
+                                            ...
+                                            'id': '769189',
+                                            ...
+                                            'person': [{'etternavn': 'Gjuvsland', ...},
+                                                       {'etternavn': 'Plahte', ...},
+                                                       {'etternavn': 'Ådnøy', ...},
+                                                       {'etternavn': 'Omholt', ...}],
+                                            ...
+                                            'tittel': 'Allele Interaction - Single '
+                                                      'Locus Genetics Meets '
+                                                      'Regulatory Biology'},
+                             'kategoridata': {'tidsskriftsartikkel': {'artikkelnr': 'e9379',
+                                                                      'doi': '10.1371/journal.pone.0009379',
+                                                                      'hefte': '2',
+                                                                      'tidsskrift': {'@oaDoaj': 'true',
+                                                                                     ...
+                                                                                     'navn': 'PLoS '
+                                                                                             'ONE',
+                                                                                     ...},
+                                                                      'volum': '5'}}},
+                            {'fellesdata': {...
+                                            'ar': '2010',
+                                            ...
+                                            'id': '771116',
+                                            ...
+                                            'person': [{'etternavn': 'Tøndel', ...},
+                                                       {'etternavn': 'Gjuvsland', ...},
+                                                       ...],
+                                            ...
+                                            'tittel': 'Screening design for '
+                                                      'computer experiments: '
+                                            ...},
+                             'kategoridata': {'tidsskriftsartikkel': {'doi': '10.1002/cem.1363',
+                                                                      'hefte': '11-12',
+                                                                      'sideangivelse': {'sideFra': '738',
+                                                                                        'sideTil': '747'},
+                                                                      'tidsskrift': {...
+                                                                                     'navn': 'Journal '
+                                                                                             'of '
+                                                                                             'Chemometrics',
+                                                                                     ...},
+                                                                      'volum': '24'}}}],
+    ...}
     """
     cpid = cristin_person_id(author)
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
