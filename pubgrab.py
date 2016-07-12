@@ -13,6 +13,7 @@ Info on transition from old to new API: http://www.cristin.no/om/aktuelt/aktuell
 """
 
 import requests
+import logging
 from urllib.parse import urlencode
 
 def cristin_person_id(author):
@@ -56,7 +57,7 @@ def pubs_by(author, fromyear="", toyear=""):
     cpid = cristin_person_id(author)
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
     url = base + urlencode(dict(lopenr=cpid, fra=fromyear, til=toyear, format="json"))
-    print(url)
+    logging.debug("Getting URL: " + url)
     pubs = requests.get(url).json()
     return pubs
 
