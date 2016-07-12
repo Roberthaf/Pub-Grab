@@ -26,13 +26,13 @@ name_of_user = "Jon Olav Vik"
 def cristin_person_id(author):
     """
     Get CRISTIN person ID of author.
-    > cristin_person_id("Jon Olav Vik")
+    >>> cristin_person_id("Jon Olav Vik")
     22311
-    > cristin_person_id("22311")
+    >>> cristin_person_id("22311")
     22311
-    > cristin_person_id(22311)
+    >>> cristin_person_id(22311)
     22311
-    > cristin_person_id("Does not exist") is None
+    >>> cristin_person_id("Does not exist") is None
     True
     """
     try:
@@ -56,7 +56,7 @@ def pubs_by(author):
     The order of dict items is nondeterministic, which makes it tricky to write doctests...
     The one below sometimes works, sometimes not.
 
-    > pubs_by("Jon Olav Vik")  # doctest:+NORMALIZE_WHITESPACE,+ELLIPSIS
+    >>> pubs_by("Jon Olav Vik")  # doctest:+NORMALIZE_WHITESPACE,+ELLIPSIS
     {...'forskningsresultat': [{'fellesdata': {'registrert': {'dato': '2016-05-25...
     """
     cpid = cristin_person_id(author)
