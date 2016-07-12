@@ -48,71 +48,19 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
     For now we return the full record, whose complex structure is documented at
     http://www.cristin.no/techdoc/xsd/resultater/1.0/
 
-    Example search that returns a single publication.
+    To make doctests reproducible we use pprint, which recursively sorts dict items.
 
-    >>> from pprint import pprint  # Deterministic printing of dict (recursively sorts items)
-    >>> p = pubs_by("Jon Olav Vik", 2014, 2014)
-    >>> len(p["forskningsresultat"])
-    1
-    >>> len(pubs_by("Jon Olav Vik", fra=1900, til=2015)["forskningsresultat"])
-    29
-    >>> sorted(p["forskningsresultat"][0].keys())
-    ['fellesdata', 'kategoridata']
-    >>> pprint(p)
-    {...
-     'forskningsresultat': [{'fellesdata': {'ar': '2014',
-                                            ...
-                                            'eksternprosjekt': [{'finansieringskilde': {'kode': 'SKGJ', ...},
-                                                                 'id': 'SKGJ-MED-005'},
-                                                                {'finansieringskilde': {'kode': 'NFR', ...},
-                                                                 'id': '178901'},
-                                                                {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
-                                                                 'id': 'NN4653K'}],
-                                            ...
-                                            'id': '1161735',
-                                            ...
-                                            'person': [{'etternavn': 'Nordbø',
-                                                        'fornavn': 'Øyvind',
-                                                        ...
-                                                        'id': '317719',
-                                                        'rekkefolgenr': '1',
-                                                        'tilhorighet': {'sted': {'avdnr': '1', ...]},
-                                                       ...
-                                                       {'etternavn': 'Vik', ...}],
-                                            ...
-                                            'sammendrag': {'sprak': {...},
-                                                           'tekst': 'The mouse is '
-                                                                    'an important '
-                                                                    ...
-                                                                    'application.'},
-                                            ...
-                                            'tittel': 'A computational pipeline '
-                                                      'for quantification of mouse '
-                                                      'myocardial stiffness '
-                                                      'parameters'},
-                             'kategoridata': {'tidsskriftsartikkel': {'arstallOnline': '2014',
-                                                                      'arstallTrykket': '2014',
-                                                                      'doi': '10.1016/j.compbiomed.2014.07.013',
-                                                                      'sideangivelse': {'sideFra': '65',
-                                                                                        'sideTil': '75'},
-                                                                      'tidsskrift': {'id': '18057',
-                                                                                     'issn': '0010-4825',
-                                                                                     'kvalitetsniva': {'kode': '1',
-                                                                                                       ...},
-                                                                                     'navn': 'Computers '
-                                                                                             'in '
-                                                                                             'Biology '
-                                                                                             'and '
-                                                                                             'Medicine',
-                                                                                     ...},
-                                                                      'volum': '53'}}}],
-    ...}
+    >>> from pprint import pprint
 
-    Example search with two publications.
+    Arne Gjuvsland published two journal articles in 2010.
 
     >>> p = pubs_by("Arne Gjuvsland", 2010, 2010)
     >>> len(p["forskningsresultat"])
     2
+
+    Each item has "fellesdata" (shared among all publication types) and "kategoridata" (particular to journal articles).
+    Both are of interest.
+
     >>> sorted(p["forskningsresultat"][0].keys())
     ['fellesdata', 'kategoridata']
     >>> pprint(p)
@@ -144,7 +92,8 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
                                             ...
                                             'id': '771116',
                                             ...
-                                            'person': [{'etternavn': 'Tøndel', ...},
+                                            'person': [{'etternavn': 'Tøndel',
+                                                        'fornavn': 'Kristin', ...},
                                                        {'etternavn': 'Gjuvsland', ...},
                                                        ...],
                                             ...
@@ -162,6 +111,19 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
                                                                                      ...},
                                                                       'volum': '24'}}}],
     ...}
+
+    Funding sources are in pubs["forskningsresultat"][i]["fellesdata"]["eksternprosjekt"].
+
+    >>> pprint(pubs_by("Jon Olav Vik", 2014, 2014))
+    {...
+     'forskningsresultat': [{'fellesdata': {'ar': '2014',
+                                            ...
+                                            'eksternprosjekt': [{'finansieringskilde': {'kode': 'SKGJ', ...},
+                                                                 'id': 'SKGJ-MED-005'},
+                                                                {'finansieringskilde': {'kode': 'NFR', ...},
+                                                                 'id': '178901'},
+                                                                {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
+                                                                 'id': 'NN4653K'}],...
     """
     cpid = cristin_person_id(author)
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
