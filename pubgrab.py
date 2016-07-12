@@ -11,10 +11,12 @@ Old API docs: http://www.cristin.no/cristin/superbrukeropplaering/ws-dokumentasj
 Old XML schema: http://www.cristin.no/techdoc/xsd/resultater/1.0/
 Info on transition from old to new API: http://www.cristin.no/om/aktuelt/aktuelle-saker/2016/api-lansering.html
 """
-
+import operator
 import requests
 import logging
 from urllib.parse import urlencode
+from collections import defaultdict
+
 
 def cristin_person_id(author):
     """
@@ -41,7 +43,7 @@ def cristin_person_id(author):
             return None
 
 
-def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
+def pubs_by(author, fra=1900, til=9999, hovedkategori="TIDSSKRIFTPUBL"):
     """
     Get publications by author.
 
@@ -60,7 +62,11 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
     >>> pprint(p)
     [{...
       'ar': '2010',
+      'arRapportert': '2010',
+      'artikkelnr': 'e9379',
+      'doi': '10.1371/journal.pone.0009379',
       ...
+      'hefte': '2',
       'id': '769189',
       ...
       'kategori': {'hovedkategori': {'kode': 'TIDSSKRIFTPUBL',
@@ -91,20 +97,20 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
                       'tekst': 'Allele Interaction - Single Locus Genetics Meets '
                                'Regulatory Biology'}],
       'sprak': {'kode': 'EN', 'navn': 'Engelsk', 'navnEngelsk': 'English'},
-      'tidsskriftsartikkel': {'artikkelnr': 'e9379',
-                              'doi': '10.1371/journal.pone.0009379',
-                              'hefte': '2',
-                              'tidsskrift': {'@oaDoaj': 'true',
-                                             'id': '435449',
-                                             'issn': '1932-6203',
-                                             'kvalitetsniva': {'kode': '1', ...},
-                                             'navn': 'PLoS ONE',
-                                             ...},
-                              'volum': '5'},
+      'tidsskrift': {'@oaDoaj': 'true',
+                     'id': '435449',
+                     'issn': '1932-6203',
+                     'kvalitetsniva': {'kode': '1', ...},
+                     'navn': 'PLoS ONE',
+                     ...},
       'tittel': 'Allele Interaction - Single Locus Genetics Meets Regulatory '
-                'Biology'},
+                'Biology',
+      'volum': '5'},
+     ...
      {...
       'ar': '2010',
+      'arRapportert': '2010',
+      'doi': '10.1002/cem.1363',
       ...
       'id': '771116',
       ...
@@ -112,18 +118,14 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
                  {'etternavn': 'Gjuvsland', ...},
                  ...],
       ...
-      'tidsskriftsartikkel': {'doi': '10.1002/cem.1363',
-                              'hefte': '11-12',
-                              'sideangivelse': {'sideFra': '738', 'sideTil': '747'},
-                              'tidsskrift': {'id': '5117',
-                                             'issn': '0886-9383',
-                                             'kvalitetsniva': {'kode': '1', ...},
-                                             'navn': 'Journal of Chemometrics',
-                                             ...},
-                              'volum': '24'},
+      'sideangivelse': {'sideFra': '738', 'sideTil': '747'},
+      'sprak': {'kode': 'EN', 'navn': 'Engelsk', 'navnEngelsk': 'English'},
+      'tidsskrift': {'id': '5117',
+                     'issn': '0886-9383',
+                     'kvalitetsniva': {'kode': '1', ...},
       'tittel': 'Screening design for computer experiments: metamodelling of a '
-                'deterministic mathematical model of the mammalian circadian '
-                'clock'}]
+                'deterministic mathematical model of the mammalian circadian clock',
+      'volum': '24'}]
 
     Funding sources are in pubs[i]["fellesdata"]["eksternprosjekt"].
 
@@ -141,23 +143,101 @@ def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
     url = base + urlencode(dict(lopenr=cpid, fra=fra, til=til, hovedkategori=hovedkategori, format="json"))
     logging.debug("Getting URL: " + url)
-    pubs = requests.get(url).json()
-    # pubs now has dict_keys(['@xsi:noNamespaceSchemaLocation', 'generert', '@xmlns:xsi', 'forskningsresultat'])
-    # Extract forskningsresultat then merge fellesdata and kategoridata so we return a list of one dict per publication
-    return [{**d["fellesdata"], **d["kategoridata"]} for d in pubs["forskningsresultat"]]
+    pubs = requests.get(url).json()["forskningsresultat"]
+    for i, d in enumerate(pubs):
+        # Reduce nesting in the dict for each publication
+        e = dict()
+        e.update(d["fellesdata"])
+        e.update(d["kategoridata"])
+        e.update(e["tidsskriftsartikkel"])
+        del e["tidsskriftsartikkel"]  # Don't want to duplicate this
+        pubs[i] = e
+    return pubs
 
 
-def citation(pub):
+def format_author(a):
+    """
+    Format author name.
+
+    >>> format_author(dict(fornavn="Odd Even", etternavn="Strange"))
+    'Strange OE'
+    >>> format_author(dict(fornavn="Odd-Even", etternavn="Strange"))
+    'Strange OE'
+    """
+    given_names = a["fornavn"].replace("-", " ").split()
+    initials = "".join(i[0] for i in given_names)
+    return a["etternavn"] + " " + initials
+
+
+def citation(pub, html=False):
     """
     Citation of a single publication.
 
-    >>> pubs = pubs_by("Arne Gjuvsland", 2010, 2010)
-    >>> pubs.keys()
-    >>> for pub in pubs:
-    ...     print(citation(pub))
+    >>> pub0, pub1 = pubs_by("Arne Gjuvsland", 2010, 2010)
+    >>> sorted(pub0.keys())
+    ['alternativTittel', 'ar', 'arRapportert', 'artikkelnr', 'doi', 'eier', 'endret', 'erPublisert', 'hefte', 'id',
+    'idItar', 'importertFra', 'kategori', 'kontrollert', 'oversettelseAv', 'person', 'rapportdata', 'registrert',
+    'sammendrag', 'sprak', 'tidsskrift', 'tittel', 'volum']
+
+    >>> print(citation(pub0))
+    Gjuvsland AB, Plahte E, Ådnøy T, Omholt SW (2010)
+    Allele Interaction - Single Locus Genetics Meets Regulatory Biology.
+    PLoS ONE 5:e9379, doi:10.1371/journal.pone.0009379
+    >>> print(citation(pub1))
+    Tøndel K, Gjuvsland AB...(2010)
+    Screening design for computer experiments:
+    metamodelling of a deterministic mathematical model of the mammalian circadian clock.
+    Journal of Chemometrics 24:738-747, doi:10.1002/cem.1363
+    >>> print(citation(pub0, html=True))
+    Gjuvsland AB, Plahte E, Ådnøy T, Omholt SW (2010)
+    Allele Interaction - Single Locus Genetics Meets Regulatory Biology.
+    <em>PLoS ONE</em> <strong>5</strong>:e9379
+    doi:<a href="http://dx.doi.org/10.1371/journal.pone.0009379">10.1371/journal.pone.0009379</a>
     """
+    pub = defaultdict(str, pub)  # Simplifies string formatting if fields are missing
+    pub["authors"] = ", ".join(format_author(a) for a in pub["person"])
+    if "sideangivelse" in pub:
+        pages = pub["sideangivelse"]
+        if "sideFra" in pages:
+            pub["pages"] = pages["sideFra"] + "-" + pages["sideTil"]
+        else:
+            pub["pages"] = pages["antallSider"] + " pages"
+    elif "artikkelnr" in pub:
+        pub["pages"] = pub["artikkelnr"]
+    if html:
+        fmt = ('{authors} ({ar}) {tittel}. <em>{tidsskrift[navn]}</em> <strong>{volum}</strong>:{pages} '
+               'doi:<a href="http://dx.doi.org/{doi}">{doi}</a>')
+    else:
+        fmt = "{authors} ({ar}) {tittel}. {tidsskrift[navn]} {volum}:{pages}, doi:{doi}"
+    return fmt.format(**pub)
+
+
+def bibliography_author(author, *args, **kwargs):
+    """
+    Bibliography of a list of publications.
+
+    All arguments are passed to pubs_by().
+
+    >>> print(bibliography_author("Jon Olav Vik"))
+    <h1>Publication list - Jon Olav Vik</h1>
+    ...
+    <p>Vik JO, Borgstrøm R, Skaala Ø (2001) Cannibalism governing mortality of juvenile brown trout, Salmo trutta, ...
+    """
+    s = "<h1>Publication list - {}</h1>\n".format(author)
+    pubs = pubs_by(author, *args, **kwargs)
+    pubs.sort(key=operator.itemgetter("ar"), reverse=True)
+    s += "\n".join("<p>{}</p>".format(citation(pub, html=True)) for pub in pubs)
+    return s
+
 
 if __name__ == "__main__":
+
+    with open("test.html", "w") as f:
+        f.write(bibliography_author("Jon Olav Vik"))
+
+    import sys
+    sys.exit(0)
+
     # set up which user to search for will be passed to an ARGV in the future
     # To be added later start year and end year
     # start_year = 2015 end_year = 2015
