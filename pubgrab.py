@@ -60,6 +60,14 @@ def pubs_by(author, fromyear="", toyear=""):
     pubs = requests.get(url).json()
     return pubs
 
+def citation(pub):
+    """
+    Citation of a single publication.
+
+    Example with a single author.
+
+    >>> pubs = pubs_by("Stig Omholt", 2013, 2013)
+    """
 
 if __name__ == "__main__":
     # set up which user to search for will be passed to an ARGV in the future
