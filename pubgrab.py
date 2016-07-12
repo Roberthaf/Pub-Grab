@@ -41,22 +41,56 @@ def cristin_person_id(author):
             return None
 
 
-def pubs_by(author, fromyear="", toyear=""):
+def pubs_by(author, fra="", til="", hovedkategori="TIDSSKRIFTPUBL"):
     """
     Get publications by author.
 
     For now we return the full record, whose complex structure is documented at
     http://www.cristin.no/techdoc/xsd/resultater/1.0/
 
-    The order of dict items is nondeterministic, which makes it tricky to write doctests...
-    The one below sometimes works, sometimes not.
-
-    >>> pubs_by("Jon Olav Vik")  # doctest:+NORMALIZE_WHITESPACE,+ELLIPSIS
-    {...'forskningsresultat': [{'fellesdata': {'registrert': {'dato': '2016-05-25...
+    >>> from pprint import pprint
+    >>> pprint(pubs_by("Jon Olav Vik", 2009, 2009))
+    {...
+     'forskningsresultat': [{'fellesdata': {'ar': '2009',
+                                            ...
+                                            'id': '355297',
+                                            ...
+                                            'person': [{'etternavn': 'Godvik',
+                                                        'fornavn': 'Inger Maren '
+                                                                   'Rivrud',
+                                                        ...
+                                                        'id': '5361',
+                                                        'rekkefolgenr': '1',
+                                                        'tilhorighet': [{'sted': {'avdnr': '15', ...]},
+                                                       {'etternavn': 'Loe', ...},
+                                                       {'etternavn': 'Vik', ...},
+                                                       {'etternavn': 'Veiberg', ...},
+                                                       {'etternavn': 'Langvatn', ...},
+                                                       {'etternavn': 'Mysterud', ...}],
+                                            ...
+                                            'tittel': 'Temporal scales, '
+                                                      'trade-offs, and functional '
+                                                      'responses in red deer '
+                                                      'habitat selection'},
+                             'kategoridata': {'tidsskriftsartikkel': {'doi': '10.1890/08-0576.1',
+                                                                      'hefte': '3',
+                                                                      'sideangivelse': {'sideFra': '699',
+                                                                                        'sideTil': '710'},
+                                                                      'tidsskrift': {'id': '185',
+                                                                                     'issn': '0012-9658',
+                                                                                     'kvalitetsniva': {'kode': '2',
+                                                                                                       'navn': 'Kvalitetsnivå '
+                                                                                                               '2',
+                                                                                                       'navnEngelsk': 'Quality '
+                                                                                                                      'level '
+                                                                                                                      '2'},
+                                                                                     'navn': 'Ecology', ...},
+                                                                      'volum': '90'}}}],
+     ...}
     """
     cpid = cristin_person_id(author)
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
-    url = base + urlencode(dict(lopenr=cpid, fra=fromyear, til=toyear, format="json"))
+    url = base + urlencode(dict(lopenr=cpid, fra=fra, til=til, hovedkategori=hovedkategori, format="json"))
     logging.debug("Getting URL: " + url)
     pubs = requests.get(url).json()
     return pubs
