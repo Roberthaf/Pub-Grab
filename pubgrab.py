@@ -15,12 +15,21 @@ Info on transition from old to new API: http://www.cristin.no/om/aktuelt/aktuell
 import argparse
 import operator
 import itertools
+import os
+import tempfile
 import requests
 import logging
 from urllib.parse import urlencode
 from collections import defaultdict
 
+from joblib import Memory
 
+
+cachedir = os.path.join(tempfile.gettempdir(), "pubgrab_cache")
+mem = Memory(cachedir, verbose=0)
+
+
+@mem.cache
 def cristin_person_id(author):
     """
     Get CRISTIN person ID of author.
@@ -46,6 +55,7 @@ def cristin_person_id(author):
             return None
 
 
+@mem.cache
 def pubs_by(author, fra=1900, til=9999, hovedkategori="TIDSSKRIFTPUBL"):
     """
     Get publications by author.
