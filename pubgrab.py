@@ -23,7 +23,8 @@ import requests
 import logging
 from urllib.parse import urlencode
 from collections import defaultdict
-from typing import Mapping, Sequence, Union, Tuple
+from typing import Mapping, Sequence, Union
+import sys
 
 from joblib import Memory
 
@@ -155,12 +156,23 @@ def pubs_by(author: str, fra=1900, til=9999, hovedkategori: str="TIDSSKRIFTPUBL"
                           {'finansieringskilde': {'kode': 'NOTUR/NORSTORE', ...},
                            'id': 'NN4653K'}],...
 
-    If there are no publications, an empty list is returned.
+    An empty list is returned if there are no publications or the author is not found.
 
     >>> pubs_by("Jon Olav Vik", 2010, 2010)
     []
+    >>> pubs_by("Someone who doesn't exist")
+    []
+
+    Verify that we handle single-author publications correctly.
+    Cristin returns a simple dict for pub["person"] for single-author papers, but a list of dict for multi-author ones.
+    For consistency, we wrap even a single author dict in a list.
+
+    >>> [citation(pub) for pub in pubs_by("Stig Omholt", fra=2013, til=2013) if len(pub["person"]) == 1]
+    ['Omholt SW (2013) From sequence to consequence and back. ... doi:10.1016/j.pbiomolbio.2012.09.003']
     """
     cpid = cristin_person_id(author)
+    if cpid is None:
+        return []
     base = "http://www.cristin.no/ws/hentVarbeiderPerson?"
     url = base + urlencode(dict(lopenr=cpid, fra=fra, til=til, hovedkategori=hovedkategori, format="json"))
     r = requests.get(url)
@@ -174,6 +186,11 @@ def pubs_by(author: str, fra=1900, til=9999, hovedkategori: str="TIDSSKRIFTPUBL"
         e.update(d["kategoridata"])
         e.update(e["tidsskriftsartikkel"])
         del e["tidsskriftsartikkel"]  # Don't want to duplicate this
+        # Ensure the author list in e["person"] is always a list of dict.
+        # From Cristin, single-author papers have just a dict in e["person"],
+        # whereas multi-author papers have a list of dict.
+        if hasattr(e["person"], "keys"):
+            e["person"] = [e["person"]]
         pubs[i] = e
     return pubs
 
@@ -238,7 +255,7 @@ def citation(pub: Mapping, html=False):
     pub = defaultdict(str, **pub)  # Simplifies string formatting if fields are missing
     pub["authors"] = ", ".join(format_author(a) for a in pub["person"])
     if "sideangivelse" in pub:
-        pages = pub["sideangivelse"]
+        pages = defaultdict(str, **pub["sideangivelse"])
         if "sideFra" in pages:
             pub["pages"] = pages["sideFra"] + "-" + pages["sideTil"]
         else:
@@ -317,18 +334,40 @@ def bibliography_author(authors: Union[str, Sequence[str]], *args, **kwargs) -> 
 
 
 if __name__ == "__main__":
-    descr = ("Compile HTML bibliography from CRISTIN for list of authors.\n\n"
-             "To work with non-ascii author names, set the console code page to utf-8.\n"
-             "In a Windows command shell, the required command is 'CHCP 65001'.")
-    parser = argparse.ArgumentParser(description=descr, formatter_class=argparse.RawDescriptionHelpFormatter)
+    descr = "Compile HTML bibliography from CRISTIN for list of authors.\n\nIf no authors are given, read from stdin."
+    epilog = ("To work with non-ascii author names, set the console code page and Python i/o encoding to utf-8.\n"
+              "In a Windows command shell:\n\n"
+              "> CHCP 65001\n"
+              "> SET PYTHONIOENCODING=UTF-8\n\n"
+              "Then run e.g.\n\n"
+              "> python pubgrab.py 'Dag Inge Våge'\n"
+              "> python pubgrab.py < people.txt > publications.html")
+    parser = argparse.ArgumentParser(description=descr, epilog=epilog,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-d", "--debug", help="log debug messages", action="store_true")
-    parser.add_argument("--clear", help="clear cache", action="store_true")
     parser.add_argument("authors", help="list of authors, e.g. 'Jane Doe' 'John Deere'", nargs="*")
+    parser.add_argument("--fra", default=2003, help="from year")
+    parser.add_argument("--til", default=2015, help="to year")
+    parser.add_argument("--hovedkategori", metavar="HKAT", default="TIDSSKRIFTPUBL", help="Hovedkategori, see\n"
+                        "http://www.cristin.no/cristin/superbrukeropplaering/ws-dokumentasjon.html#hovedkategorier2011")
+    parser.add_argument("--clear", help="clear cache", action="store_true")
     args = parser.parse_args()
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     if args.clear:
         mem.clear()
     logging.debug("Authors: %s", args.authors)
+    if not args.authors:
+        args.authors = [i.strip() for i in sys.stdin if i.strip()]
     if args.authors:
-        print(bibliography_author(args.authors, fra=2003, til=2015))
+        print("""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+        <meta charset="utf-8"/>
+        </head>
+        <body>
+        {}
+        </body>
+        </html>
+        """.format(bibliography_author(args.authors, fra=args.fra, til=args.til, hovedkategori=args.hovedkategori)))
