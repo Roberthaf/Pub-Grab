@@ -24,6 +24,7 @@ import logging
 from urllib.parse import urlencode
 from collections import defaultdict
 from typing import Mapping, Sequence, Union, Tuple
+import sys
 
 from joblib import Memory
 
@@ -318,6 +319,7 @@ def bibliography_author(authors: Union[str, Sequence[str]], *args, **kwargs) -> 
 
 if __name__ == "__main__":
     descr = ("Compile HTML bibliography from CRISTIN for list of authors.\n\n"
+             "If no authors are given, read from stdin.\n\n"
              "To work with non-ascii author names, set the console code page to utf-8.\n"
              "In a Windows command shell, the required command is 'CHCP 65001'.")
     parser = argparse.ArgumentParser(description=descr, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -330,5 +332,7 @@ if __name__ == "__main__":
     if args.clear:
         mem.clear()
     logging.debug("Authors: %s", args.authors)
+    if not args.authors:
+        args.authors = [i.strip() for i in sys.stdin if i.strip()]
     if args.authors:
         print(bibliography_author(args.authors, fra=2003, til=2015))
