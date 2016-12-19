@@ -346,8 +346,8 @@ if __name__ == "__main__":
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-d", "--debug", help="log debug messages", action="store_true")
     parser.add_argument("authors", help="list of authors, e.g. 'Jane Doe' 'John Deere'", nargs="*")
-    parser.add_argument("--fra", default=2003, help="from year")
-    parser.add_argument("--til", default=2015, help="to year")
+    parser.add_argument("--fra", default=0, help="from year")
+    parser.add_argument("--til", default=9999, help="to year")
     parser.add_argument("--hovedkategori", metavar="HKAT", default="TIDSSKRIFTPUBL", help="Hovedkategori, see\n"
                         "http://www.cristin.no/cristin/superbrukeropplaering/ws-dokumentasjon.html#hovedkategorier2011")
     parser.add_argument("--clear", help="clear cache", action="store_true")
